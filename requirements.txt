@@ -4,12 +4,12 @@ Click==7.0
 Flask==1.0.3
 Flask-Session==0.3.1
 gunicorn==19.9.0
-idna==2.8
+idna
 itsdangerous==1.1.0
 Jinja2==2.10.1
 MarkupSafe==2.0.1
 psycopg2==2.8.3
-requests==2.20.0
+requests
 SQLAlchemy==1.3.6
 urllib3==1.24.2
 Werkzeug==0.15.5
