@@ -5,16 +5,18 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 import requests
 from xml.etree import ElementTree
+import pandas as pd
+import pickle
 
 app = Flask(__name__)
 
-app.secret_key = 'key'
+
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 
 engine = create_engine(
-    'postgres://gmtanwnptdxhbk:4e51670c23af5fb63220fe4b138c0a0dde83390935f29e6ec8e914efbdf8b1db@ec2-34-193-46-89.compute-1.amazonaws.com:5432/dcldsd80gdqt3n'
-    'ec2-34-193-46-89.compute-1.amazonaws.com')
+    'postgres://hbohcwbaukrfpj:7e99e59537a38c868085aec082c903eecf2f63b3aa426162615012dc98c93ceb@ec2-54-152-175-141.'
+    'compute-1.amazonaws.com:5432/d34ung0btlp93t')
 db = scoped_session(sessionmaker(bind=engine))
 
 
@@ -192,28 +194,54 @@ def book_api(isbn):
 
     return api
 
+@app.route('/homepage', methods=['GET', 'POST'])
+def homepage():
 
-@app.route('/review', methods=['GET', 'POST'])
-def review():
+    recommend = 0
+    loaded_model = pickle.load(open("model/book_recommender.pkl", "rb"))
+    images = pd.read_csv('datasets/images.csv')
+    book_pivot = pd.read_csv('datasets/book_pivot.csv')
+    book_pivot.set_index('title', inplace=True)
+    book_names = list(book_pivot.index)
+
 
     if request.method == 'POST':
+        Id = int(request.form['book'])
+        distances, suggestions = loaded_model.kneighbors(
+            book_pivot.iloc[Id, :].values.reshape(1, -1))
+        suggestions = suggestions[0]
+        authors = []
+        years = []
+        publishers = []
+        titles = []
+        isbn_no = []
+        recommend = 1
+        choice = []
+        
 
-        isbn = request.form.get('isbn')
-        review = request.form.get('review')
+        name = book_names[Id]
+        choice.append(name)
+        choice.append(images[images['title'] == name]['author'].values[0])
+        choice.append(images[images['title'] == name]['year'].values[0])
+        choice.append(images[images['title'] == name]['publisher'].values[0])
+        choice.append(images[images['title'] == name]['ISBN'].values[0])
+        
+        for i in range(len(suggestions)-1):
+            name = book_pivot.index[suggestions[i+1]]
+            author = images[images['title'] == name]['author'].values[0]
+            yr = images[images['title'] == name]['year'].values[0]
+            publish = images[images['title'] == name]['publisher'].values[0]
+            isbn = images[images['title'] == name]['ISBN'].values[0]
 
-        username = session['username']
+            authors.append(author)
+            years.append(yr)
+            publishers.append(publish)
+            titles.append(name)
+            isbn_no.append(isbn)
+        return render_template('homepage.html', book_names=book_names,choice=choice, titles=titles, author=authors, year=years, publisher=publishers, recommend=recommend, isbn_no=isbn_no)
 
-        book = db.execute('SELECT * FROM books WHERE isbn=:isbn ',
-                          {'isbn': isbn}).fetchone()
+    return render_template('homepage.html', book_names=book_names)
 
-        if book is None:
-            return render_template('error.html', message='Book ISBN Invalid', navbar=True)
 
-        db.execute('INSERT INTO reviews(title, isbn, review, user_name) VALUES(:title, :isbn, :review, :username)',
-                   {'title': book.title, 'isbn': isbn, 'review': review, 'username': username})
-        db.commit()
-
-        return render_template('success.html', message='Review Successfully Submitted', navbar=True)
-
-    else:
-        return render_template('review.html', navbar=True)
+if __name__ == '__main__':
+    app.run(debug=True)
