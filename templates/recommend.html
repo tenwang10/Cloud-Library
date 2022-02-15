@@ -8,14 +8,14 @@
     <div class="container" style="margin-top: 70px">
     <h2>Submit a Review</h2>
         <br>
-    <form action="{{ url_for('review') }}" method="post">
+    <form action="{{ url_for('recommend') }}" method="post">
             <label>ISBN</label>
     <div class="form-group">
         <input type="text" name="isbn" placeholder="Book ISBN" class="form-control">
     </div>
         <label>Review</label>
         <div class="form-group">
-        <textarea name="review" cols="30" rows="10" class="form-control" placeholder="Write a Review"></textarea>
+        <textarea name="recommend" cols="30" rows="10" class="form-control" placeholder="Book Recommendation"></textarea>
         </div>
   <button type="submit" class="btn">Submit</button>
     </form>
