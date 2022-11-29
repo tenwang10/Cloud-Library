@@ -1,2 +1,1 @@
-# Cloud-Library
-Book description, review and sharing with the community
+Book Recommendation webapp(WSGI). Dataset: (http://www2.informatik.uni-freiburg.de/~cziegler/BX); Model created using collaboration filtering and saved as pickle(scikit-learn); SQLAlchemy(toolkit) to manipulate PostgresSQL; intergration of Heroku Cloud(Salesforce). 
